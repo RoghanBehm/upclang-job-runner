@@ -2,8 +2,9 @@ const { SQSClient, ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVis
 const { spawn } = require("child_process");
 const fs = require("fs/promises");
 const path = require("path");
-const { getToFile, putFile } = require("s3IO.js");   
-const { updateJob } = require("dynamo.js");
+const { getToFile, putFile } = require("./s3IO");
+const { updateJob } = require("./dynamo");
+
 
 const sqs = new SQSClient({ region: process.env.AWS_REGION || "ap-southeast-2" });
 const QUEUE_URL = process.env.JOBS_QUEUE_URL;
