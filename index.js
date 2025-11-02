@@ -6,9 +6,9 @@ const { getToFile, putFile } = require("./s3IO");
 const { updateJob } = require("./dynamo");
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
-const sqs = new SQSClient({ region: process.env.AWS_REGION || "ap-southeast-2" });
-const QUEUE_URL = process.env.JOBS_QUEUE_URL;
-const VISIBILITY_SEC = parseInt(process.env.VISIBILITY_SEC || "900", 10);
+const sqs = new SQSClient({ region: "ap-southeast-2" });
+const QUEUE_URL = "https://sqs.ap-southeast-2.amazonaws.com/901444280953/job-queue-clang";
+const VISIBILITY_SEC = parseInt("900", 10);
 const HEARTBEAT_SEC = 30;
 
 async function extractTar(tarFile, outDir) {
