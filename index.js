@@ -4,7 +4,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const { getToFile, putFile } = require("./s3IO");
 const { updateJob } = require("./dynamo");
-
+const log = (...a) => console.log(new Date().toISOString(), ...a);
 
 const sqs = new SQSClient({ region: process.env.AWS_REGION || "ap-southeast-2" });
 const QUEUE_URL = process.env.JOBS_QUEUE_URL;
@@ -21,18 +21,21 @@ async function extractTar(tarFile, outDir) {
 }
 
 async function handle(msg) {
+  log("got message", { receipt: msg.ReceiptHandle.slice(0,16) + "..." });
   const body = JSON.parse(msg.Body);
   const { jobId, projectId, userId, profile, sourceKey, s3LogKey } = body;
-
+  log("parsed", { jobId, projectId, profile, sourceKey, s3LogKey });
   await updateJob(jobId, { status: "running", startedAt: new Date().toISOString() });
-
+  log("job -> running", jobId);
   const workDir = `/tmp/job-${jobId}`;
   const srcTar  = path.join(workDir, "src.tar.gz");
   const srcDir  = path.join(workDir, "src");
   const outDir  = path.join(workDir, "out");
 
   await fs.mkdir(workDir, { recursive: true });
-  await getToFile(sourceKey, srcTar);     
+  log("downloading source", { sourceKey, dst: srcTar });
+  await getToFile(sourceKey, srcTar);
+  log("extract to", srcDir);     
   await extractTar(srcTar, srcDir);
 
 
@@ -42,12 +45,13 @@ async function handle(msg) {
     await sqs.send(new ChangeMessageVisibilityCommand({
       QueueUrl: QUEUE_URL, ReceiptHandle: msg.ReceiptHandle, VisibilityTimeout: VISIBILITY_SEC
     }));
+    log("heartbeat visibility extended", jobId);
   }, HEARTBEAT_SEC * 1000);
 
   const proc = spawn("bash", ["run_tidy.sh", srcDir, outDir], { cwd: path.resolve(__dirname, "..", "bash") });
   const exitCode = await new Promise((resolve) => proc.on("close", resolve));
   alive = false; clearInterval(hb);
-
+  log("bash exit", { exitCode });
   try {
     const logPath = path.join(outDir, "report", "clang-tidy.txt");
     await putFile(logPath, s3LogKey, "text/plain");
@@ -75,6 +79,7 @@ async function loop() {
     try {
       await handle(msg);
       await sqs.send(new DeleteMessageCommand({ QueueUrl: QUEUE_URL, ReceiptHandle: msg.ReceiptHandle }));
+      log("deleted message", jobId);
     } catch (e) {
       console.error("worker error:", e);
     }
