@@ -1,3 +1,5 @@
+
+require('dotenv').config();
 const { SQSClient, ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } = require("@aws-sdk/client-sqs");
 const { spawn } = require("child_process");
 const fs = require("fs/promises");
@@ -48,7 +50,7 @@ async function handle(msg) {
     log("heartbeat visibility extended", jobId);
   }, HEARTBEAT_SEC * 1000);
 
-  const proc = spawn("bash", ["run_tidy.sh", srcDir, outDir], { cwd: path.resolve(__dirname, "..", "bash") });
+  const proc = spawn("bash", ["run_tidy.sh", srcDir, outDir], { cwd: path.resolve(__dirname, "bash") });
   const exitCode = await new Promise((resolve) => proc.on("close", resolve));
   alive = false; clearInterval(hb);
   log("bash exit", { exitCode });
@@ -71,15 +73,19 @@ async function handle(msg) {
 
 async function loop() {
   while (true) {
+	 console.log("before first resp sqs.send await");
     const resp = await sqs.send(new ReceiveMessageCommand({
       QueueUrl: QUEUE_URL, MaxNumberOfMessages: 1, WaitTimeSeconds: 20, VisibilityTimeout: VISIBILITY_SEC
     }));
+	 log("after resp await", resp);
     if (!resp.Messages || !resp.Messages.length) continue;
     const msg = resp.Messages[0];
     try {
+	console.log("before handle await");
       await handle(msg);
+	    console.log("after handle await, before send await");
       await sqs.send(new DeleteMessageCommand({ QueueUrl: QUEUE_URL, ReceiptHandle: msg.ReceiptHandle }));
-      log("deleted message", jobId);
+     console.log("deleted message");
     } catch (e) {
       console.error("worker error:", e);
     }

@@ -50,7 +50,6 @@ jq -r '.[].file' "$BUILD/compile_commands.json" | sort -u > "$FILES"
 
 # Run clang-tidy
 run-clang-tidy \
-  -clang-tidy-binary /usr/local/bin/clang-tidy-nc \
   -p "$BUILD" -j "${THREADS:-2}" \
   -header-filter='^'"$ROOT"'/(src|include)/' \
   -checks='bugprone-*,modernize-*,performance-*,readability-*' \

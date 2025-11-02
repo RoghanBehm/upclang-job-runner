@@ -1,0 +1,28 @@
+{
+  "name": "upclang-job-runner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoghanBehm/upclang-job-runner.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RoghanBehm/upclang-job-runner/issues"
+  },
+  "homepage": "https://github.com/RoghanBehm/upclang-job-runner#readme",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.922.0",
+    "@aws-sdk/client-s3": "^3.922.0",
+    "@aws-sdk/client-sqs": "^3.922.0",
+    "@aws-sdk/lib-dynamodb": "^3.922.0",
+    "@aws-sdk/s3-request-presigner": "^3.922.0",
+    "dotenv": "^17.2.3"
+  }
+}
