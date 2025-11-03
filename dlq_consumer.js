@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 const { getJob, updateJob } = require("./dynamo"); 
 const sqs = new SQSClient({ region: "ap-southeast-2" });
