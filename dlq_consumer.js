@@ -1,7 +1,7 @@
 const { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
 const { getJob, updateJob } = require("./dynamo"); 
-const sqs = new SQSClient({ region: process.env.AWS_REGION || "ap-southeast-2" });
-const DLQ_URL = process.env.DLQ_URL;
+const sqs = new SQSClient({ region: "ap-southeast-2" });
+const DLQ_URL = "https://sqs.ap-southeast-2.amazonaws.com/901444280953/job-queue-clang-dlq";
 
 const TERMINAL = new Set(["finished","failed","canceled"]);
 
