@@ -75,12 +75,14 @@ async function loop() {
   while (true) {
 	 console.log("before first resp sqs.send await");
     const resp = await sqs.send(new ReceiveMessageCommand({
-      QueueUrl: QUEUE_URL, MaxNumberOfMessages: 1, WaitTimeSeconds: 20, VisibilityTimeout: VISIBILITY_SEC
+      QueueUrl: QUEUE_URL, MaxNumberOfMessages: 1, WaitTimeSeconds: 20, VisibilityTimeout: VISIBILITY_SEC, AttributeNames: ["ApproximateReceiveCount"],
     }));
 	 log("after resp await", resp);
     if (!resp.Messages || !resp.Messages.length) continue;
     const msg = resp.Messages[0];
     try {
+      const receiveCount = Number(msg.Attributes?.ApproximateReceiveCount || "1");
+      log("receiveCount", receiveCount, "messageId", msg.MessageId);
 	console.log("before handle await");
       await handle(msg);
 	    console.log("after handle await, before send await");
